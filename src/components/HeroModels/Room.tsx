@@ -43,7 +43,7 @@ type GLTFResult = GLTF & {
     lambert1: THREE.MeshStandardMaterial;
     phong1: THREE.MeshStandardMaterial;
   };
-  animations: GLTFAction[];
+  animations: THREE.AnimationClip[];
 };
 
 export function Room(props: JSX.IntrinsicElements["group"]) {
