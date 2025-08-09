@@ -1,7 +1,9 @@
 import * as THREE from "three";
-import { type JSX } from "react";
-import { useGLTF } from "@react-three/drei";
+import { useEffect, useRef, useState, type JSX } from "react";
+import { useGLTF, useTexture } from "@react-three/drei";
 import { type GLTF } from "three-stdlib";
+import { EffectComposer, SelectiveBloom } from "@react-three/postprocessing";
+import { BlendFunction } from "postprocessing";
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -50,29 +52,61 @@ export function Room(props: JSX.IntrinsicElements["group"]) {
   const { nodes, materials } = useGLTF(
     "/models/optimized-room.glb"
   ) as unknown as GLTFResult;
+  const screensRef = useRef<THREE.Mesh>(null!);
+  const [selection, setSelection] = useState<THREE.Mesh[]>([]);
+  const matCapTexture = useTexture("/images/textures/mat1.png");
+  const curtainMaterial = new THREE.MeshPhongMaterial({
+    color: "#d90429",
+  });
+  const bodyMaterial = new THREE.MeshPhongMaterial({
+    map: matCapTexture,
+  });
+  const tableMaterial = new THREE.MeshPhongMaterial({
+    color: "#582f0e",
+  });
+  const radiatorMaterial = new THREE.MeshPhongMaterial({
+    color: "#fff",
+  });
+  const compMaterial = new THREE.MeshStandardMaterial({
+    color: "#fff",
+  });
+  const pillowMaterial = new THREE.MeshPhongMaterial({
+    color: "#8338ec",
+  });
+  const chairMaterial = new THREE.MeshPhongMaterial({
+    color: "#000",
+  });
+
+  useEffect(() => {
+    if (screensRef.current) {
+      setSelection([screensRef.current]);
+    }
+  }, [screensRef]); // runs after ref is assigned
+
   return (
-    <group {...props} dispose={null}>
+    <group {...props} dispose={null!}>
+      <EffectComposer>
+        <SelectiveBloom
+          selection={selection}
+          intensity={1.5}
+          luminanceThreshold={0.2}
+          luminanceSmoothing={0.9}
+          blendFunction={BlendFunction.ADD}
+        />
+      </EffectComposer>
       <mesh
         geometry={nodes._________6_blinn1_0.geometry}
-        material={materials.blinn1}
+        material={curtainMaterial}
       />
-      <mesh
-        geometry={nodes.body1_blinn1_0.geometry}
-        material={materials.blinn1}
-      />
-      <mesh
-        geometry={nodes.cabin_blinn1_0.geometry}
-        material={materials.blinn1}
-      />
+      <mesh geometry={nodes.body1_blinn1_0.geometry} material={bodyMaterial} />
+      <mesh geometry={nodes.cabin_blinn1_0.geometry} material={tableMaterial} />
       <mesh
         geometry={nodes.chair_body_blinn1_0.geometry}
-        material={materials.blinn1}
+        material={chairMaterial}
       />
+      <mesh geometry={nodes.comp_blinn1_0.geometry} material={compMaterial} />
       <mesh
-        geometry={nodes.comp_blinn1_0.geometry}
-        material={materials.blinn1}
-      />
-      <mesh
+        ref={screensRef}
         geometry={nodes.emis_lambert1_0.geometry}
         material={materials.lambert1}
       />
@@ -114,7 +148,7 @@ export function Room(props: JSX.IntrinsicElements["group"]) {
       />
       <mesh
         geometry={nodes.pillows_blinn1_0.geometry}
-        material={materials.blinn1}
+        material={pillowMaterial}
       />
       <mesh
         geometry={nodes.polySurface53_blinn1_0.geometry}
@@ -122,7 +156,7 @@ export function Room(props: JSX.IntrinsicElements["group"]) {
       />
       <mesh
         geometry={nodes.radiator_blinn1_0.geometry}
-        material={materials.blinn1}
+        material={radiatorMaterial}
       />
       <mesh
         geometry={nodes.radiator_blinn1_0001.geometry}
@@ -144,10 +178,7 @@ export function Room(props: JSX.IntrinsicElements["group"]) {
         geometry={nodes.stylus_blinn1_0.geometry}
         material={materials.blinn1}
       />
-      <mesh
-        geometry={nodes.table_blinn1_0.geometry}
-        material={materials.blinn1}
-      />
+      <mesh geometry={nodes.table_blinn1_0.geometry} material={tableMaterial} />
       <mesh
         geometry={nodes.tablet_blinn1_0.geometry}
         material={materials.blinn1}
